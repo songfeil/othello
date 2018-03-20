@@ -53,7 +53,7 @@ module othello(
 		defparam VGA.RESOLUTION = "160x120";
 		defparam VGA.MONOCHROME = "FALSE";
 		defparam VGA.BITS_PER_COLOUR_CHANNEL = 6;
-		defparam VGA.BACKGROUND_IMAGE = "black.mif";
+		defparam VGA.BACKGROUND_IMAGE = "board_32.mif";
 			
 
 	  wire [3:0] select_ld;
@@ -128,7 +128,7 @@ module othello(
 				
 				.move_up(up), 
 				.move_down(down), 
-				.move_left(lefft), 
+				.move_left(left), 
 				.move_right(right),
 				
 				.plot_empty(plot_empty), 
