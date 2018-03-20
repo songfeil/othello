@@ -3,7 +3,7 @@ module othello(
 		// Your inputs and outputs here
       PS2_CLK,
       PS2_DAT,
-		KEY
+		KEY,
 		// The ports below are for the VGA output.  Do not change.
 		VGA_CLK,   						//	VGA Clock
 		VGA_HS,							//	VGA H_SYNC
@@ -92,7 +92,7 @@ module othello(
 				
 		keyboard_tracker k1 (
 				.clock(CLOCK_50),
-				.reset(KEY[0]),
+				.reset(~KEY[0]),
 	 
 				.PS2_CLK(PS2_CLK),
 				.PS2_DAT(PS2_DAT),
@@ -119,6 +119,9 @@ module othello(
 		wire [7:0] x_plot;
 		wire [6:0] y_plot;
 		wire [1:0] select;
+		wire enable;
+		
+		assign enable = plot_empty | draw_cell | place_disk;
 				
 		datapath d1(
 				.turn_side(turn_side),
@@ -137,7 +140,7 @@ module othello(
 				
 				.x_plot(x_plot),
 				.y_plot(y_plot),
-				.select(select);
+				.select(select)
 				);
 				
 		plothelper p1(
@@ -149,7 +152,7 @@ module othello(
 				.y_in(y_plot), 
 				.select(select), 
 				.clock(CLOCK_50), 
-				.enable(), 
+				.enable(enable), 
 				.resetn(restart)
 				);
 endmodule

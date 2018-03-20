@@ -3,17 +3,16 @@ module control(
     input clk,
     input restart,
     input go,
-	 input move_up, move_down, move_left, move_right, place
+	 input move_up, move_down, move_left, move_right, place,
 	 input win,
 	 
 //    output reg ld_key,
 //	 output reg [3:0] select_ld
 	 output reg turn_side,
-    output reg plot_empty, draw_cell, place_disk,
+    output reg plot_empty, draw_cell, place_disk
 	 );
 
-    reg [3:0] current_state, next_state; 
-    reg place;
+    reg [3:0] current_state, next_state;
 	 wire en;
 	 
 	 assign en = move_up || move_down || move_left || move_right;
@@ -38,7 +37,7 @@ module control(
                 
 					 B_SELECT: begin
 						 if (place)
-								next_state = B_PLACE
+								next_state = B_PLACE;
 						 else
 								next_state = en ? S_CYCLE_1 : B_SELECT;
 						 end // 
@@ -50,7 +49,7 @@ module control(
 					 
 					 W_SELECT: begin
 						 if (place)
-								next_state = W_PLACE
+								next_state = W_PLACE;
 						 else
 								next_state = en ? S_CYCLE_3 : W_SELECT;
 						 end
@@ -71,7 +70,7 @@ module control(
 //        ld_x = 1'b0;
 //        ld_y = 1'b0;
         draw_cell = 1'b0;
-        ld_key = 1'b0;
+//        ld_key = 1'b0;
 
 		  turn_side = 1'b0;
 		  plot_empty = 1'b0;
@@ -99,7 +98,7 @@ module control(
 //					 select_ld = 4'd13 // load empty cell pic 
 					 end
 				S_CYCLE_2: begin 
-                ld_key = 1'b1; // load present keyboard
+//                ld_key = 1'b1; // load present keyboard
 //					 ld_alu_out = 1'b1;
 //					 ld_x = 1'b1; 
 //					 ld_y = 1'b1; // load new location based on keyboard operations
@@ -122,7 +121,7 @@ module control(
                 plot_empty = 1'b1; 
 					 end
 				S_CYCLE_4: begin 
-					 ld_key = 1'b1; // load present keyboard
+//					 ld_key = 1'b1; // load present keyboard
 //					 ld_alu_out = 1'b1;
 //					 ld_x = 1'b1; 
 //					 ld_y = 1'b1; // load new location based on keyboard operations
@@ -140,7 +139,7 @@ module control(
     // current_state registers
     always@(posedge clk)
     begin: state_FFs
-        if(restart)
+        if(!restart)
             current_state <= START_GAME;
         else
             current_state <= next_state;
