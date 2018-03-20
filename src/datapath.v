@@ -12,6 +12,8 @@ module datapath(
     reg [2:0] old_x_pos;
     reg [2:0] old_y_pos;
     reg side;
+	reg side_turned;
+	reg moved;
 
     wire board_ram_out;
     wire board_ram_wren;
@@ -19,16 +21,17 @@ module datapath(
     wire [5:0] board_ram_address;
     wire move;
     assign move = move_up || move_down || move_left || move_right;
+	assign plot = plot_box || plot_empty || place_disk;
 
-    board_ram br0 (
-	.address(board_ram_address[5:0]),
-	.clock(clk),
-	.data(board_ram_data_in[1:0]),
-	.wren(board_ram_wren),
-	.q(board_ram_out));
+//    board_ram br0 (
+//	.address(board_ram_address[5:0]),
+//	.clock(clk),
+//	.data(board_ram_data_in[1:0]),
+//	.wren(board_ram_wren),
+//	.q(board_ram_out));
 	
 	
-    always @ (posedge clk, posedge move, posedge resetn) begin
+    always @ (posedge clk, posedge move, posedge resetn, posedge plot) begin
         if (resetn) begin
             curr_x_pos <= 3'd0;
             curr_y_pos <= 3'd0;
@@ -38,9 +41,11 @@ module datapath(
             x_plot <= 1'd0;
 				y_plot <= 1'd0;
             side <= 1'd0;
+			side_turned <= 1'd0;
+			moved <= 1'd0;
         end
 		  
-		  else if(move) begin
+		  else if(move && ~moved) begin
             old_x_pos[2:0] <= curr_x_pos[2:0];
             old_y_pos[2:0] <= curr_y_pos[2:0];
             if (move_up)
@@ -51,10 +56,23 @@ module datapath(
                 curr_x_pos[2:0] <= curr_x_pos[2:0] - 1;
             else if (move_right) 
                 curr_x_pos[2:0] <= curr_x_pos[2:0] + 1;
+			moved <= ~moved;
+			end
+			
+			else if (~move && moved) begin
+				moved <= ~moved;
 			end
         
-        else if (turn_side)
+        else if (turn_side && ~side_turned)
+		begin
             side <= ~side;
+			side_turned <= ~side_turned;
+		end
+		
+		else if (~turn_side && side_turned)
+		begin
+			side_turned <= ~side_turned;
+		end
 
         else if (plot_empty)
         begin
