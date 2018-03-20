@@ -1,5 +1,6 @@
 module datapath(
-   input turn_side, move_up, move_down, move_left, move_right, plot_empty, plot_box, place_disk,
+    input turn_side, move_up, move_down, move_left, move_right, plot_empty, plot_box, place_disk,
+	input [5:0] color,
 	input resetn,
 	input clk,
     output reg [7:0] x_plot;
