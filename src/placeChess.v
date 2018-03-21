@@ -9,13 +9,18 @@ module control(
 //    output reg ld_key,
 //	 output reg [3:0] select_ld
 	 output reg turn_side,
-    output reg plot_empty, draw_cell, place_disk
+    output reg plot_empty, draw_cell, place_disk,
+	 output [3:0] state,
+	 output [3:0] ns
 	 );
 
     reg [3:0] current_state, next_state;
 	 wire en;
+	 assign state[3:0] = current_state[3:0];
+	 assign ns[3:0] = next_state[3:0];
 	 
-	 assign en = move_up || move_down || move_left || move_right;
+	 assign en = 0;
+	 //assign en = move_up || move_down || move_left || move_right;
     localparam  START_GAME   = 4'd0,
                 DRAW_BOARD   = 4'd1,
                 B_SELECT     = 4'd2,
@@ -139,8 +144,10 @@ module control(
     // current_state registers
     always@(posedge clk)
     begin: state_FFs
-        if(!restart)
+        if(restart) begin
             current_state <= START_GAME;
+				//next_state <= START_GAME;
+				end
         else
             current_state <= next_state;
     end // state_FFS
@@ -159,7 +166,7 @@ module ratedivider(enable,en,clock,reset_n);
 	always @(posedge clock, negedge reset_n) // Triggered every time clock rises
 		begin
 			if (reset_n == 1'b0) // When reset n is 0
-				q <= 0; // Set q to 0
+				q <= d; // Set q to 0
 //			else if (par_load == 1'b1) // Check if parallel load
 //				q <= d; // Load d
 			else if (en == 1'b1) // Increment q only when enable is 1
@@ -173,3 +180,4 @@ module ratedivider(enable,en,clock,reset_n);
 	
 	assign enable = (q == 0) ? 1 : 0;
 endmodule
+

@@ -4,6 +4,7 @@ module othello(
       PS2_CLK,
       PS2_DAT,
 		KEY,
+		LEDR,
 		// The ports below are for the VGA output.  Do not change.
 		VGA_CLK,   						//	VGA Clock
 		VGA_HS,							//	VGA H_SYNC
@@ -29,13 +30,19 @@ module othello(
 		output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
 		output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
 		
+		output [9:0] LEDR;
+		
 		wire [17:0] colour;
 		wire [7:0] x;
 		wire [6:0] y;
 		wire writeEn;
+		wire resetn;
+		
+		assign resetn = ~(KEY[0]);
+
 	
 		vga_adapter VGA(
-			.resetn(resetn),
+			.resetn(KEY[0]),
 			.clock(CLOCK_50),
 			.colour(colour),
 			.x(x),
@@ -66,11 +73,16 @@ module othello(
 	  assign win = 0;
 	  assign clock = CLOCK_50;
 	  
+	  assign start = ~KEY[1];
+	  assign restart = ~KEY[0];
+	  assign LEDR[9] = clk;
 	  control c1(
 				.clk(clk),
             .restart(restart),
-		      .go(start),  
+		      .go(~KEY[1]),  
 				.win(win),
+				.state(LEDR[3:0]),
+				.ns(LEDR[7:4]),
 				
 //				.ld_key(ld_key), 
 //				.ld_x(ld_x), 
@@ -83,21 +95,21 @@ module othello(
 				.turn_side(turn_side),
 				
 				.move_up(up), 
-				.move_down(down), 
+				.move_down(~KEY[2]), 
 				.move_left(left), 
 				.move_right(right),
-				.place(place)
+				.place(~KEY[3])
 				
 				);
 				
 		keyboard_tracker k1 (
 				.clock(CLOCK_50),
-				.reset(~KEY[0]),
+				.reset(KEY[0]),
 	 
 				.PS2_CLK(PS2_CLK),
 				.PS2_DAT(PS2_DAT),
 	 
-				.w(restart), 
+				.w(), 
 				.a(), 
 				.s(), 
 				.d(),
@@ -106,14 +118,14 @@ module othello(
 				.up(up), 
 				.down(down),
 				.space(place), 
-				.enter(start)
+				.enter()
 				);
 				
 		ratedivider r1(
 				.enable(clk),
-				.en(start),
+				.en(1),
 				.clock(CLOCK_50),
-				.reset_n(restart)
+				.reset_n(~restart)
 				);
 				
 		wire [7:0] x_plot;

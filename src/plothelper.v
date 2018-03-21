@@ -21,14 +21,14 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
     reg [7:0] x;
     reg [6:0] y;
 
-    always@(posedge enable)
+    always@(*)
     begin
         x[7:0] <= x_in;
         y[6:0] <= y_in;
     end
 
-    assign y_adder[3:0] = counter_out[7:0] / 4'b10;
-    assign x_adder[3:0] = counter_out[7:0] % 4'b10;
+    assign x_adder[3:0] = counter_out[7:0] / 8'd12;
+    assign y_adder[3:0] = counter_out[7:0] - (counter_out[7:0] / 8'd12) * 8'd12;
     assign x_out[7:0] = x[7:0] + x_adder[3:0];
     assign y_out[6:0] = y[6:0] + y_adder[3:0];
     assign plot = counter_plot;
