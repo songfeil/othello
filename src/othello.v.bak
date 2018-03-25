@@ -5,7 +5,6 @@ module othello(
       PS2_DAT,
 		KEY,
 		LEDR,
-		HEX0,HEX2,HEX4,HEX5,
 		// The ports below are for the VGA output.  Do not change.
 		VGA_CLK,   						//	VGA Clock
 		VGA_HS,							//	VGA H_SYNC
@@ -31,11 +30,7 @@ module othello(
 		output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
 		output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
 		
-		output[9:0] LEDR;
-		output[6:0] HEX0;
-		output[6:0] HEX2;
-		output[6:0] HEX4;
-		output[6:0] HEX5;
+		output [9:0] LEDR;
 		
 		wire [17:0] colour;
 		wire [7:0] x;
@@ -68,18 +63,15 @@ module othello(
 		defparam VGA.BACKGROUND_IMAGE = "board_32.mif";
 			
 
-	  wire [3:0] state,ns;
-//	  select_ld;
+	  wire [3:0] select_ld;
  	  wire clk, restart, start;
 	  wire place, win;
-//	  wire ld_alu_out, ld_key, ld_x, ld_y;
-	  wire up, down, left, right;
+	  wire ld_alu_out, ld_key, ld_x, ld_y;
 	  wire plot_empty, place_disk, draw_cell, turn_side;
-	  wire confirm;
-//	  wire clock;
+	  wire clock;
 	  
 	  assign win = 0;
-//	  assign clock = CLOCK_50;
+	  assign clock = CLOCK_50;
 	  
 	  assign start = ~KEY[1];
 	  assign restart = ~KEY[0];
@@ -87,12 +79,10 @@ module othello(
 	  control c1(
 				.clk(clk),
             .restart(restart),
-		      .go(~KEY[1]), 
-				.jump(~KEY[3]),
-				.confirm(confirm),
+		      .go(~KEY[1]),  
 				.win(win),
-				.state(state),
-				.ns(ns),
+				.state(LEDR[3:0]),
+				.ns(LEDR[7:4]),
 				
 //				.ld_key(ld_key), 
 //				.ld_x(ld_x), 
@@ -103,13 +93,13 @@ module othello(
 				.plot_empty(plot_empty), 
 				.place_disk(place_disk),
 				.turn_side(turn_side),
-				.detect(detect),
 				
 				.move_up(up), 
-				.move_down(down), 
+				.move_down(~KEY[2]), 
 				.move_left(left), 
 				.move_right(right),
-				.place(place)
+				.place(~KEY[3])
+				
 				);
 				
 		keyboard_tracker k1 (
@@ -177,49 +167,4 @@ module othello(
 				.enable(enable), 
 				.resetn(restart)
 				);
-		
-		hex_decoder H0(
-			  .hex_digit(state), 
-			  .segments(HEX0)
-			  );
-        
-		hex_decoder H2(
-			  .hex_digit(ns), 
-			  .segments(HEX2)
-			  );
-//		hex_decoder H4(
-//			  .hex_digit(SW[7:4]), 
-//			  .segments(HEX4)
-//			  );
-//		hex_decoder H5(
-//			  .hex_digit(SW[8]), 
-//			  .segments(HEX5)
-//			  );
-				
-endmodule
-
-module hex_decoder(hex_digit, segments);
-    input [3:0] hex_digit;
-    output reg [6:0] segments;
-   
-    always @(*)
-        case (hex_digit)
-            4'h0: segments = 7'b100_0000;
-            4'h1: segments = 7'b111_1001;
-            4'h2: segments = 7'b010_0100;
-            4'h3: segments = 7'b011_0000;
-            4'h4: segments = 7'b001_1001;
-            4'h5: segments = 7'b001_0010;
-            4'h6: segments = 7'b000_0010;
-            4'h7: segments = 7'b111_1000;
-            4'h8: segments = 7'b000_0000;
-            4'h9: segments = 7'b001_1000;
-            4'hA: segments = 7'b000_1000;
-            4'hB: segments = 7'b000_0011;
-            4'hC: segments = 7'b100_0110;
-            4'hD: segments = 7'b010_0001;
-            4'hE: segments = 7'b000_0110;
-            4'hF: segments = 7'b000_1110;   
-            default: segments = 7'h7f;
-        endcase
 endmodule
