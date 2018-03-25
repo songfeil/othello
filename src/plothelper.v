@@ -20,22 +20,53 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
 
     reg [7:0] x;
     reg [6:0] y;
+	reg enreg;
+	reg enabled;
+	reg plotfilter;
 
     always@(*)
     begin
         x[7:0] <= x_in;
         y[6:0] <= y_in;
+		if (select == 2'b01) begin
+			if (counter_out == 8'd0 || counter_out == 8'd11 || counter_out == 8'd132 || counter_out == 8'd143)
+				plotfilter = 1;
+			else
+				plotfilter = 0;
+		end else
+			plotfilter = 1;
     end
+	
+	always @(posedge clock, posedge resetn)
+	begin
+		if (resetn) begin
+			enabled <= 0;
+		end
+		else begin
+			if (enreg == 1)
+				enreg <= 0;
+		
+			if (enable) begin
+				if (~enabled) begin
+					enreg <= 1;
+					enabled <= 1;
+				end
+			end else begin // not enable
+				if (enabled)
+					enabled <= 0;
+			end
+		end
+	end
 
     assign x_adder[3:0] = counter_out[7:0] / 8'd12;
     assign y_adder[3:0] = counter_out[7:0] - (counter_out[7:0] / 8'd12) * 8'd12;
     assign x_out[7:0] = x[7:0] + x_adder[3:0];
     assign y_out[6:0] = y[6:0] + y_adder[3:0];
-    assign plot = counter_plot;
+    assign plot = counter_plot & plotfilter;
     assign color[17:0] = color_out[17:0];
 
     picram_mux pm0 (
-        .select(select),
+        .select(select[1:0]),
         .clk(clock),
         .address(counter_out[7:0]),
         .color(color_out[17:0])
@@ -43,7 +74,7 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
 
     counter c0 (
         .clock(clock),
-        .enable(enable),
+        .enable(enreg),
         .resetn(resetn),
         .q(counter_out),
         .en(counter_plot)
@@ -86,7 +117,7 @@ module counter(clock, enable, resetn, q, en);
 endmodule
 
 module picram_mux(
-    input select,
+    input [1:0] select,
     input clk,
     input [7:0] address,
     output reg [17:0] color
@@ -128,7 +159,7 @@ module picram_mux(
 
 	always @(*)
 	begin
-    case (select)
+    case (select[1:0])
       0: begin
         color[17:0] <= empty_color[17:0]; 
       end
