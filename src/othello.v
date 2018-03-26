@@ -76,14 +76,17 @@ module othello(
 	  wire up, down, left, right;
 	  wire plot_empty, place_disk, draw_cell, turn_side;
 	  wire confirm;
+	  wire [7:0] check_dir;
 //	  wire clock;
 	  
 	  assign win = 0;
+	  assign confirm = &check_dir;
 //	  assign clock = CLOCK_50;
 	  
 	  assign start = ~KEY[1];
 	  assign restart = ~KEY[0];
 	  assign LEDR[9] = clk;
+	  
 	  control c1(
 				.clk(clk),
             .restart(restart),
@@ -138,12 +141,13 @@ module othello(
 				.reset_n(~restart)
 				);
 				
-		wire [7:0] x_plot;
-		wire [6:0] y_plot;
-		wire [1:0] select;
+		wire [7:0] x_plot = place_disk ? x_plot1 : x_plot0;
+		wire [6:0] y_plot = place_disk ? y_plot1 : y_plot0;
+		wire [1:0] select = place_disk ? select1 : select0;
+		wire [1:0] q_data[0:63];
 		wire enable;
 		
-		assign enable = plot_empty | draw_cell | place_disk;
+		assign enable0 = plot_empty | draw_cell;
 				
 		datapath d1(
 				.turn_side(turn_side),
@@ -160,11 +164,11 @@ module othello(
 				.resetn(restart), 
 				.clk(CLOCK_50),
 				
-				.x_plot(x_plot),
-				.y_plot(y_plot),
-				.select(select)
+				.x_plot(x_plot0),
+				.y_plot(y_plot0),
+				.select(select0)
 				);
-				
+						
 		plothelper p1(
 				.plot(writeEn), 
 				.x_out(x), 
@@ -176,6 +180,29 @@ module othello(
 				.clock(CLOCK_50), 
 				.enable(enable), 
 				.resetn(restart)
+				);
+		
+		board_ram(
+				.clock(CLOCK_50), 
+				.resetn(restart), 
+				.side(), 
+				.detecten(detect), 
+				.writeen(place_disk), 
+				.x(), 
+				.y(), 
+				.q(q_data), 
+				.dir(check_dir)
+				);
+		
+		redraw re(
+				.clock(CLOCK_50), 
+				.en, 
+				.resetn(restart), 
+				.q(q_data), 
+				.enable(enable1), 
+				.x_pos(x_plot1), 
+				.y_pos(y_plot1),
+				.select(select1)
 				);
 		
 		hex_decoder H0(

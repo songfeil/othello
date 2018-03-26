@@ -4,7 +4,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
 	input [2:0] x;
 	input [2:0] y;
 	input [1:0] side;
-	output [1:0] q;
+	output [1:0] q [0:63];
 	output [7:0] dir;
 	
 	wire detectcontrol;
@@ -168,9 +168,40 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
 					end
 				end
 				
+//				// Write upright
+//				if (dirreg[1] == 1) begin: wupr
+//					for (i1 = pos; i1 >= 0; i1=i1-8) begin
+//						if (boardreg [i1] == opside)
+//							boardreg [i1] <= side;
+//					end
+//				end
+//				
+//				// Write downright
+//				if (dirreg[3] == 1) begin: wdownr
+//					for (i3 = pos; i3 < 64; i3=i3+8) begin
+//						if (boardreg [i3] == opside)
+//							boardreg [i3] <= side;
+//					end
+//				end
+//				
+//				// Write downleft
+//				if (dirreg[5] == 1) begin: wdownl
+//					for (i6 = pos; i6 >= 8*y; i6=i6-1) begin
+//						if (boardreg [i5] == opside)
+//							boardreg [i5] <= side;
+//					end
+//				end
+//				
+//				// Write upleft
+//				if (dirreg[7] == 1) begin: wupl
+//					for (i7 = pos; i7 <= 8*y+7; i2=i2+1) begin
+//						if (boardreg [i7] == opside)
+//							boardreg [i7] <= side;
+//					end
+//				end
 				
 			end
 		end
 	end
-
+	
 endmodule
