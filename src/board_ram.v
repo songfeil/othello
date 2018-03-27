@@ -129,8 +129,11 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
 							end
 						end
 					end
+				end // block: dright
+
+			        if (boardreg [pos] == 2'b00) begin
+				   detstart[7:0] <= 8'b0;
 				end
-				
 			end
 			
 			// Reserve the disks

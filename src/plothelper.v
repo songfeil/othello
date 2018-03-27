@@ -28,7 +28,7 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
     begin
         x[7:0] <= x_in;
         y[6:0] <= y_in;
-		if (select == 2'b01) begin
+		if (select == 2'b01 || select == 2'b00) begin
 			if (counter_out == 8'd0 || counter_out == 8'd11 || counter_out == 8'd132 || counter_out == 8'd143)
 				plotfilter = 1;
 			else
