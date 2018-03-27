@@ -342,7 +342,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	
 	always @(posedge resetn) // Triggered every time clock rises
 			begin
-				if (resetn == 1'b0) // When reset n is 0
+				if (resetn == 1'b1) // When reset n is 0
 					begin
 						d <= 'd64; // Set d to 0
 						enable <= 0;

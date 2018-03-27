@@ -44,6 +44,7 @@ module othello(
 		wire resetn;
 		
 		assign resetn = ~(KEY[0]);
+		assign LEDR[9] = writeEn;
 
 	
 		vga_adapter VGA(
@@ -234,9 +235,17 @@ module othello(
 			  .segments(HEX0)
 			  );
         
-		hex_decoder H2(
+		hex_decoder H1(
 			  .hex_digit(ns), 
+			  .segments(HEX1)
+			  );
+		hex_decoder H2(
+			  .hex_digit(x_pos), 
 			  .segments(HEX2)
+			  );
+		hex_decoder H3(
+			  .hex_digit(y_pos), 
+			  .segments(HEX3)
 			  );
 //		hex_decoder H4(
 //			  .hex_digit(SW[7:4]), 
