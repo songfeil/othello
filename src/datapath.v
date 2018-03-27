@@ -1,10 +1,12 @@
 module datapath(
-   input turn_side, move_up, move_down, move_left, move_right, plot_empty, plot_box, place_disk,
-	input resetn,
-	input clock,
-    output reg [7:0] x_plot,
-    output reg [6:0] y_plot,
-    output reg [1:0] select
+   input 	    turn_side, move_up, move_down, move_left, move_right, plot_empty, plot_box, place_disk,
+   input 	    resetn,
+   input 	    clock,
+   output [2:0]     x,
+   output [2:0]     y,
+   output reg [7:0] x_plot,
+   output reg [6:0] y_plot,
+   output reg [1:0] select
     );
 	
     reg [2:0] curr_x_pos;
@@ -18,6 +20,9 @@ module datapath(
     wire [1:0] board_ram_data_in;
     wire [5:0] board_ram_address;
     wire move;
+   assign x = curr_x_pos;
+   assign y = curr_y_pos;
+   
     assign move = move_up || move_down || move_left || move_right;
 	assign plot = plot_box || plot_empty || place_disk;
 
