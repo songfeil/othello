@@ -108,7 +108,10 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	always@(posedge clock) begin
 		if (resetn) begin
 			for(i = 0; i < 64; i=i+1)
-			boardreg [i] <= 2'b0;
+			begin
+				boardreg [i] <= 2'b0;
+			end
+			
 			boardreg [27] <= 2'd2;
 			boardreg [28] <= 2'd3;
 			boardreg [35] <= 2'd3;
@@ -340,13 +343,14 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	reg enable;
 	reg [7:0] d; // Declare d
 	
-	always @(posedge resetn) // Triggered every time clock rises
-			begin
-				if (resetn == 1'b1) // When reset n is 0
-					begin
-						d <= 'd64; // Set d to 0
-						enable <= 0;
-					end
+//	always @(posedge clock, posedge resetn) // Triggered every time clock rises
+//			begin
+//				if (resetn == 1'b1) // When reset n is 0
+//					begin
+//						d <= 'd64; // Set d to 0
+//						enable <= 0;
+//					end
+//			end
 //				else // Increment d only when enable is 1
 //					begin
 //					  if (en) // When d is the maximum value for the counter
@@ -364,23 +368,26 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 //							enable <= 1'b0;
 //							end
 //					end
-			end
+//			end
 			
 	always@(*) begin
-		if (en) // When d is the maximum value for the counter
-							d <= 'd64;
-					  else if(clk)
-							begin
-								select <= boardreg[d];
-								x_plot[7:0] <= 7'd13 * d + 7'd9;
-								y_plot[6:0] <= 6'd13 * d + 6'd9;
-								enable <= 1'b1;
-								d <= d - 1'b1 ; // Increment d
-							end
-					  else if (~clk)
-							begin
-							enable <= 1'b0;
-							end
+		if (resetn) // When d is the maximum value for the counter
+		begin
+			d = 'd64;
+			enable = 0;
+		end
+	  else if(clk)
+			begin
+				select = boardreg[d];
+				x_plot[7:0] = 7'd13 * d + 7'd9;
+				y_plot[6:0] = 6'd13 * d + 6'd9;
+				enable = 1'b1;
+				d = d - 1'b1 ; // Increment d
+			end
+	  else if (~clk)
+			begin
+				enable = 1'b0;
+			end
 	end
 	
 	ratedivider r2(

@@ -87,7 +87,7 @@ module othello(
 	  
 	  assign start = ~KEY[1];
 	  assign restart = ~KEY[0];
-	  assign LEDR[9] = clk;
+	  assign LEDR[0] = clk;
 	  
 	  control c1(
 				.clk(clk),
