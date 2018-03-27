@@ -17,3 +17,12 @@ Error messages are listed in file
 C:/1-Mike/UT/CSC258/proj/vga_adapter/vga_pll.cnxerr.
 
 Can't create the custom megafunction variation file(s)
+
+E:/github/othello/src/vga_adapter/vga_pll.v
+
+Mar 27 11AM:18:19>: Error in CNX file format.
+
+Error messages are listed in file
+E:/github/othello/src/vga_adapter/vga_pll.cnxerr.
+
+Can't create the custom megafunction variation file(s)

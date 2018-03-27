@@ -167,7 +167,7 @@ module othello(
 				.place_disk(place_disk),
 
 				.resetn(restart), 
-				.clk(CLOCK_50),
+				.clock(CLOCK_50),
 				
 				.x(x_pos),
 				.y(y_pos),
