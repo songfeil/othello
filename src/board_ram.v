@@ -45,6 +45,8 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	
 	reg [7:0] detstart;
 	reg [7:0] detend;
+	reg [7:0] detnot;
+	reg [7:0] wrifin;
 	
 	wire [7:0] pos;
 	assign pos = 8 * y + x;
@@ -59,123 +61,240 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	wire [1:0] test;
 	assign test = boardreg [pos + 1];
 	
+	wire detectcounteren;
+	wire writecounteren;
+	reg writeenabled;
+	reg [7:0] uppos;
+	reg [7:0] downpos;
+	reg [7:0] leftpos;
+	reg [7:0] rightpos;
+	reg [2:0] upamt;
+	reg [2:0] downamt;
+	reg [2:0] leftamt;
+	reg [2:0] rightamt;
+	
 	always@(*) begin
-		dirreg[7:0] = detstart[7:0] & detend[7:0];
+		dirreg[7:0] = detstart[7:0] & detend[7:0] & (~detnot[7:0]);
+		upamt = pos / 8;
+		downamt = 7 - pos / 8;
+		leftamt = pos - (pos / 8) * 8;
+		rightamt = 7 + (pos / 8) * 8 - pos;
 	end
+	
+	wire [7:0] detcountoutt;
+	wire [7:0] wricountoutt;
+	wire [7:0] detcountout;
+	wire [7:0] wricountout;
+	assign detcountout = detcountoutt;
+	assign wricountout = wricountoutt;
+	counter #(7) c1(
+		.clock(clock),
+		.enable(detectcontrol),
+		.resetn(resetn),
+		.q(detcountoutt),
+		.en(detectcounteren)
+	);
+	
+	counter #(7) c2(
+		.clock(clock),
+		.enable(writecontrol),
+		.resetn(resetn),
+		.q(wricountoutt),
+		.en(writecounteren)
+	);
+	
+
 	
 	always@(posedge clock) begin
 		if (resetn) begin
 			for(i = 0; i < 64; i=i+1)
-				boardreg [i] <= 2'b0;
+			boardreg [i] <= 2'b0;
 			boardreg [27] <= 2'd2;
 			boardreg [28] <= 2'd3;
 			boardreg [35] <= 2'd3;
 			boardreg [36] <= 2'd2;
-			dirreg <= 8'd0;
 			detstart <= 8'd0;
 			detend <= 8'd0;
+			detnot <= 8'd0;
+			wrifin <= 8'd0;
 		end else begin
 			// Detect if placeable
-			if (detectcontrol) begin: detect
-				// Detect up
-				if (pos > 7) begin: dup
-					if (boardreg [pos - 8] == opside) begin
+			if (detectcounteren) begin: detect
+				uppos <= pos - 8 * detcountout;
+				downpos <= pos + 8 * detcountout;
+				leftpos <= pos - 1 * detcountout;
+				rightpos <= pos + 1 * detcountout;
+				if (detcountout == 1) begin
+					// Original board should be empty
+					if (boardreg [pos] != 0 && boardreg [pos] != 1)
+						detnot <= 8'b11111111;
+				end else if (detcountout == 2) begin
+					// Check the disk beside it
+					if (detcountout <= upamt && boardreg [uppos] == opside)
 						detstart[0] <= 1;
-						for (i0 = pos; i0 >= 0; i0=i0-8) begin: loop0
-							if (boardreg [i0] == side) begin
-								detend[0] <= 1;
-								disable dup;
-							end else if ((i0 != pos) && boardreg [i0] < 2'b10) begin
-								disable dup;
-							end
-						end
-					end
-				end
-
-				// Detect down
-				if (pos < 56) begin: ddown
-					if (boardreg [pos + 8] == opside) begin
+					if (detcountout <= downamt && boardreg [downpos] == opside)
 						detstart[4] <= 1;
-						for (i4 = pos; i4 < 64; i4=i4+8) begin: loop1
-							if (boardreg [i4] == side) begin
-								detend[4] <= 1;
-								disable ddown;
-							end else if ((i4 != pos) && boardreg [i4] < 2'b10) begin
-								disable ddown;
-							end
-						end
-					end
-				end
-				
-				// Detect left
-				if (pos > 8 * y) begin: dleft
-					if (boardreg [pos - 1] == opside) begin
+					if (detcountout <= leftamt && boardreg [leftpos] == opside)
 						detstart[6] <= 1;
-						for (i6 = pos; i6 >= 8*y; i6=i6-1) begin: loop
-							if (boardreg [i6] == side) begin
-								detend[6] <= 1;
-								disable dleft;
-							end else if ((i6 != pos) && boardreg [i6] < 2'b10) begin
-								disable dleft;
-							end
-						end
-					end
+					if (detcountout <= rightamt && boardreg [rightpos] == opside)
+						detstart[2] <= 1;
+				end else begin
+					// Find for same color disk
+					if (boardreg [uppos] == side && detcountout <= upamt)
+						detend[0] <= 1;
+					if (boardreg [downpos] == side && detcountout <= downamt)
+						detend[4] <= 1;
+					if (boardreg [leftpos] == side && detcountout <= leftamt)
+						detend[6] <= 1;
+					if (boardreg [rightpos] == side && detcountout <= rightamt)
+						detend[2] <= 1;
 				end
 				
-				// Detect right
-				if (pos < 8 * y + 7) begin: dright
-					if (boardreg [pos + 1] == opside) begin
-						detstart[2] <= 1;
-						for (i2 = pos; i2 <= 8*y+7; i2=i2+1) begin: loop
-							if (boardreg [i2] == side) begin
-								detend[2] <= 1;
-								disable dright;
-							end else if ((i2 != pos) && boardreg [i2] < 2'b10) begin
-								disable dright;
-							end
-						end
-					end
-				end // block: dright
+				wrifin <= ~dirreg;
+				
+				// // Detect up
+				// if (pos > 7) begin: dup
+					// if (boardreg [pos - 8] == opside) begin
+						// detstart[0] <= 1;
+						// for (i0 = pos; i0 >= 0; i0=i0-8) begin: loop0
+							// if (boardreg [i0] == side) begin
+								// detend[0] <= 1;
+								// disable dup;
+							// end else if ((i0 != pos) && boardreg [i0] < 2'b10) begin
+								// disable dup;
+							// end
+						// end
+					// end
+				// end
 
-			        if (boardreg [pos] == 2'b00) begin
-				   detstart[7:0] <= 8'b0;
-				end
+				// // Detect down
+				// if (pos < 56) begin: ddown
+					// if (boardreg [pos + 8] == opside) begin
+						// detstart[4] <= 1;
+						// for (i4 = pos; i4 < 64; i4=i4+8) begin: loop1
+							// if (boardreg [i4] == side) begin
+								// detend[4] <= 1;
+								// disable ddown;
+							// end else if ((i4 != pos) && boardreg [i4] < 2'b10) begin
+								// disable ddown;
+							// end
+						// end
+					// end
+				// end
+				
+				// // Detect left
+				// if (pos > 8 * y) begin: dleft
+					// if (boardreg [pos - 1] == opside) begin
+						// detstart[6] <= 1;
+						// for (i6 = pos; i6 >= 8*y; i6=i6-1) begin: loop
+							// if (boardreg [i6] == side) begin
+								// detend[6] <= 1;
+								// disable dleft;
+							// end else if ((i6 != pos) && boardreg [i6] < 2'b10) begin
+								// disable dleft;
+							// end
+						// end
+					// end
+				// end
+				
+				// // Detect right
+				// if (pos < 8 * y + 7) begin: dright
+					// if (boardreg [pos + 1] == opside) begin
+						// detstart[2] <= 1;
+						// for (i2 = pos; i2 <= 8*y+7; i2=i2+1) begin: loop
+							// if (boardreg [i2] == side) begin
+								// detend[2] <= 1;
+								// disable dright;
+							// end else if ((i2 != pos) && boardreg [i2] < 2'b10) begin
+								// disable dright;
+							// end
+						// end
+					// end
+				// end // block: dright
+
+			        // if (boardreg [pos] == 2'b00) begin
+				   // detstart[7:0] <= 8'b0;
+				// end
+			end
+			
+			else if (dirreg == 0 && ~detectcounteren) begin
+				detstart <= 8'd0;
+				detend <= 8'd0;
+				detnot <= 8'd0;
+			end
+			
+						
+			else if (writeenabled && ~writecounteren) begin
+				detstart <= 8'd0;
+				detend <= 8'd0;
+				detnot <= 8'd0;
+				wrifin <= 8'd0;
+				writeenabled <= 0;
 			end
 			
 			// Reserve the disks
-			else if (writecontrol) begin
-				boardreg [pos] <= side;
-				// Write up
-				if (dirreg[0] == 1) begin: wup
-					for (i0 = pos; i0 >= 0; i0=i0-8) begin
-						if (boardreg [i0] == opside)
-							boardreg [i0] <= side;
-					end
+			else if (writecounteren) begin
+				writeenabled <= 1;
+				uppos <= pos - 8 * wricountout;
+				downpos <= pos + 8 * wricountout;
+				leftpos <= pos - 1 * wricountout;
+				rightpos <= pos + 1 * wricountout;
+				if (wricountout == 1)
+					boardreg [pos] <= side;
+				else begin
+					if (boardreg [uppos] == side || boardreg [uppos] < 2'b10)
+						wrifin[0] <= 1;
+					if (boardreg [downpos] == side || boardreg [downpos] < 2'b10)
+						wrifin[4] <= 1;
+					if (boardreg [leftpos] == side || boardreg [leftpos] < 2'b10)
+						wrifin[6] <= 1;
+					if (boardreg [rightpos] == side || boardreg [rightpos] < 2'b10)
+						wrifin[2] <= 1;
+					if (wrifin[0] == 0)
+						boardreg [uppos] <= side;
+					if (wrifin[4] == 0)
+						boardreg [downpos] <= side;
+					if (wrifin[6] == 0)
+						boardreg [leftpos] <= side;
+					if (wrifin[2] == 0)
+						boardreg [rightpos] <= side;
 				end
+			end
+
+			
+			
+				// boardreg [pos] <= side;
+				// // Write up
+				// if (dirreg[0] == 1) begin: wup
+					// for (i0 = pos; i0 >= 0; i0=i0-8) begin
+						// if (boardreg [i0] == opside)
+							// boardreg [i0] <= side;
+					// end
+				// end
 				
-				// Write down
-				if (dirreg[4] == 1) begin: wdown
-					for (i4 = pos; i4 < 64; i4=i4+8) begin
-						if (boardreg [i4] == opside)
-							boardreg [i4] <= side;
-					end
-				end
+				// // Write down
+				// if (dirreg[4] == 1) begin: wdown
+					// for (i4 = pos; i4 < 64; i4=i4+8) begin
+						// if (boardreg [i4] == opside)
+							// boardreg [i4] <= side;
+					// end
+				// end
 				
-				// Write left
-				if (dirreg[6] == 1) begin: wleft
-					for (i6 = pos; i6 >= 8*y; i6=i6-1) begin
-						if (boardreg [i6] == opside)
-							boardreg [i6] <= side;
-					end
-				end
+				// // Write left
+				// if (dirreg[6] == 1) begin: wleft
+					// for (i6 = pos; i6 >= 8*y; i6=i6-1) begin
+						// if (boardreg [i6] == opside)
+							// boardreg [i6] <= side;
+					// end
+				// end
 				
-				// Write right
-				if (dirreg[2] == 1) begin: wright
-					for (i2 = pos; i2 <= 8*y+7; i2=i2+1) begin
-						if (boardreg [i2] == opside)
-							boardreg [i2] <= side;
-					end
-				end
+				// // Write right
+				// if (dirreg[2] == 1) begin: wright
+					// for (i2 = pos; i2 <= 8*y+7; i2=i2+1) begin
+						// if (boardreg [i2] == opside)
+							// boardreg [i2] <= side;
+					// end
+				// end
 				
 //				// Write upright
 //				if (dirreg[1] == 1) begin: wupr
@@ -209,7 +328,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 //					end
 //				end
 				
-			end
+			
 		end
 	end
 	
