@@ -147,6 +147,7 @@ module othello(
 		wire [1:0] q_data[0:63];
 		wire enable;
 		
+		wire[2:0] x_pos, y_pos;
 		assign enable0 = plot_empty | draw_cell;
 				
 		datapath d1(
@@ -164,6 +165,8 @@ module othello(
 				.resetn(restart), 
 				.clk(CLOCK_50),
 				
+				.x(x_pos),
+				.y(y_pos),
 				.x_plot(x_plot0),
 				.y_plot(y_plot0),
 				.select(select0)
@@ -185,18 +188,18 @@ module othello(
 		board_ram(
 				.clock(CLOCK_50), 
 				.resetn(restart), 
-				.side(), 
+				.side(select), 
 				.detecten(detect), 
 				.writeen(place_disk), 
-				.x(), 
-				.y(), 
+				.x(x_pos), 
+				.y(y_pos), 
 				.q(q_data), 
 				.dir(check_dir)
 				);
 		
 		redraw re(
 				.clock(CLOCK_50), 
-				.en, 
+				.en(&check_dir), 
 				.resetn(restart), 
 				.q(q_data), 
 				.enable(enable1), 
