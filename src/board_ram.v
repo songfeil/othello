@@ -215,8 +215,8 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	
 	
 	wire clk;
-	reg[7:0] x_pos;
-	reg[6:0] y_pos;
+	reg[7:0] x_plot;
+	reg[6:0] y_plot;
 	reg [1:0] select;	
 	reg enable;
 	reg [7:0] d; // Declare d
@@ -232,13 +232,17 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 					begin
 					  if (en) // When d is the maximum value for the counter
 							d <= 'd64;
-					  else
+					  else if(clk)
 							begin
 								select <= boardreg[d];
-								x_pos[7:0] <= 7'd13 * d + 7'd9;
-								y_pos[6:0] <= 6'd13 * d + 6'd9;
+								x_plot[7:0] <= 7'd13 * d + 7'd9;
+								y_plot[6:0] <= 6'd13 * d + 6'd9;
 								enable <= 1'b1;
 								d <= d - 1'b1 ; // Increment d
+							end
+					  else 
+							begin
+								enable = 1'b0;
 							end
 					end
 			end
