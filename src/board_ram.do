@@ -6,11 +6,11 @@ vlib work
 # The timescale argument defines default time unit
 # (used when no unit is specified), while the second number
 # defines precision (all times are rounded to this value)
-vlog -timescale 1ns/1ns board_ram.v
+vlog -timescale 1ns/1ns board_ram.v plothelper.v enableonce.v placeChess.v
 
 
 # Load simulation using alu as the top level simulation module.
-vsim board_ram
+vsim board_ram 
 
 # Log all signals and add some signals to waveform window.
 log {/*}
@@ -27,6 +27,6 @@ force {detecten} 0 0ns
 force {detecten} 1 35ns, 0 100ns
 
 force {writeen} 0 0ns
-force {writeen} 1 105ns, 0 200ns
+force {writeen} 1 1500ns, 0 1700ns
 
-run 300ns
+run 3000ns
