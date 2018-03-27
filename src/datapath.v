@@ -56,7 +56,7 @@ module datapath(
 		if (resetn)
 		begin
 			x_plot[7:0] <= 1'd0;
-			y_plot[7:0] <= 1'd0;
+			y_plot[6:0] <= 1'd0;
             select[1:0] <= 2'd0;
 		end
 	

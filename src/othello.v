@@ -72,10 +72,11 @@ module othello(
 //	  select_ld;
  	  wire clk, restart, start;
 	  wire place, win;
-//	  wire ld_alu_out, ld_key, ld_x, ld_y;
+	  wire ld_pos,ld_select_out,ld_enable;
 	  wire up, down, left, right;
 	  wire plot_empty, place_disk, draw_cell, turn_side;
 	  wire confirm;
+	  wire enable_select;
 	  wire [7:0] check_dir;
 //	  wire clock;
 	  
@@ -98,10 +99,11 @@ module othello(
 				.ns(ns),
 				
 //				.ld_key(ld_key), 
-//				.ld_x(ld_x), 
-//				.ld_y(ld_y),
-//				.select_ld(select_ld),
-//				.ld_alu_out(ld_alu_out),  
+				.ld_pos(ld_pos),
+				.ld_select_out(ld_select_out),
+				.ld_enable(ld_enable), 
+				.enable_select(enable_select),
+				
 				.draw_cell(draw_cell),
 				.plot_empty(plot_empty), 
 				.place_disk(place_disk),
@@ -138,17 +140,19 @@ module othello(
 				.enable(clk),
 				.en(1),
 				.clock(CLOCK_50),
-				.reset_n(~restart)
+				.reset_n(~restart),
+				.d('d833333)
 				);
 				
 		wire [7:0] x_plot = place_disk ? x_plot1 : x_plot0;
 		wire [6:0] y_plot = place_disk ? y_plot1 : y_plot0;
 		wire [1:0] select = place_disk ? select1 : select0;
-		wire [1:0] q_data[0:63];
-		wire enable;
+//		wire [1:0] q_data[0:63];
+		wire enable, enable0, enable1;
 		
 		wire[2:0] x_pos, y_pos;
 		assign enable0 = plot_empty | draw_cell;
+		assign enable = place_disk ? enable1 : enable0;
 				
 		datapath d1(
 				.turn_side(turn_side),
@@ -176,16 +180,18 @@ module othello(
 				.plot(writeEn), 
 				.x_out(x), 
 				.y_out(y), 
-				.color(colour), 
+				.color(colour),
+				
 				.x_in(x_plot), 
 				.y_in(y_plot), 
-				.select(select), 
+				.select(select),
+				
 				.clock(CLOCK_50), 
 				.enable(enable), 
 				.resetn(restart)
 				);
 		
-		board_ram(
+		board_ram b1(
 				.clock(CLOCK_50), 
 				.resetn(restart), 
 				.side(select), 
@@ -194,19 +200,34 @@ module othello(
 				.x(x_pos), 
 				.y(y_pos), 
 				.q(q_data), 
-				.dir(check_dir)
+				.dir(check_dir),
+				
+				.x_plot(x_plot1),
+				.y_plot(y_plot1),
+				.select(select1),
+				.enable(enable1)
 				);
 		
-		redraw re(
-				.clock(CLOCK_50), 
-				.en(&check_dir), 
-				.resetn(restart), 
-				.q(q_data), 
-				.enable(enable1), 
-				.x_pos(x_plot1), 
-				.y_pos(y_plot1),
-				.select(select1)
-				);
+//		selecter re(
+//				.clock(CLOCK_50), 
+//				.en(enable_select), 
+//				.resetn(restart),
+//				
+//				.ld_pos(ld_pos),
+//				.ld_select_out(ld_select_out),
+//				.ld_enable(ld_enable),
+//				
+//				.q(q_data), 
+//				.select0(select0),
+//				.enable0(enable0),
+//				.x_plot(x_plot0),
+//				.y_plot(y_plot0),
+//				
+//				.enable(enable),
+//				.x_pos(x_plot), 
+//				.y_pos(y_plot),
+//				.select(select)
+//				);
 		
 		hex_decoder H0(
 			  .hex_digit(state), 

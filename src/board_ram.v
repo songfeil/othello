@@ -1,11 +1,16 @@
-module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
+module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable);
 	input clock, resetn;
 	input detecten, writeen;
 	input [2:0] x;
 	input [2:0] y;
 	input [1:0] side;
-	output [1:0] q [0:63];
+	output [1:0] q;
 	output [7:0] dir;
+	
+	output [7:0] x_plot;
+	output [6:0] y_plot;
+	output [1:0] select;
+	output enable;
 	
 	wire detectcontrol;
 	enableonce e1(
@@ -23,6 +28,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
 		.resetn(resetn)
 	);
 	
+	wire en;
 	reg [7:0] i;
 	reg [7:0] i0;
 	reg [7:0] i1;
@@ -207,4 +213,43 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir);
 		end
 	end
 	
+	
+	wire clk;
+	reg[7:0] x_pos;
+	reg[6:0] y_pos;
+	reg [1:0] select;	
+	reg enable;
+	reg [7:0] d; // Declare d
+	
+	always @(posedge clk, negedge clk, negedge resetn) // Triggered every time clock rises
+			begin
+				if (resetn == 1'b0) // When reset n is 0
+					begin
+						d <= 'd64; // Set d to 0
+						enable <= 0;
+					end
+				else // Increment d only when enable is 1
+					begin
+					  if (en) // When d is the maximum value for the counter
+							d <= 'd64;
+					  else
+							begin
+								select <= boardreg[d];
+								x_pos[7:0] <= 7'd13 * d + 7'd9;
+								y_pos[6:0] <= 6'd13 * d + 6'd9;
+								enable <= 1'b1;
+								d <= d - 1'b1 ; // Increment d
+							end
+					end
+			end
+	
+	ratedivider r2(
+				.enable(clk),
+				.en(1),
+				.clock(clock),
+				.reset_n(~resetn),
+				.d('d1999999)
+				);
+
 endmodule
+
