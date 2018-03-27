@@ -37,7 +37,7 @@ module othello(
 		output[6:0] HEX4;
 		output[6:0] HEX5;
 		
-		wire [17:0] colour;
+		wire [2:0] colour;
 		wire [7:0] x;
 		wire [6:0] y;
 		wire writeEn;
