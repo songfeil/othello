@@ -18,8 +18,6 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
     wire [3:0] y_adder;
     wire [2:0] color_out;
 
-    reg [7:0] x;
-    reg [6:0] y;
 	reg enreg;
 	reg enreg1;
 	reg enreg2;
@@ -29,13 +27,11 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
 
     always@(*)
     begin
-        x[7:0] = x_in;
-        y[6:0] = y_in;
 		if (select == 2'b01 || select == 2'b00) begin
-//			if (counter_out == 8'd0 || counter_out == 8'd11 || counter_out == 8'd132 || counter_out == 8'd143)
+			if ((x_adder == 8'd0 || x_adder == 8'd11) && (y_adder == 8'd0 || y_adder == 8'd11))
 				plotfilter = 1;
-//			else
-//				plotfilter = 0;
+			else
+				plotfilter = 0;
 		end else
 			plotfilter = 1;
     end
@@ -72,10 +68,8 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
 		end
 	end
 
-    assign x_adder[3:0] = counter_out[7:0] / 8'd12;
-    assign y_adder[3:0] = counter_out[7:0] - (counter_out[7:0] / 8'd12) * 8'd12;
     assign x_out[7:0] = x_in[7:0] + x_adder[3:0];
-    assign y_out[6:0] = y_in[6:0] + y_adder[3:0];
+    assign y_out[6:0] = y_in[6:0] + y_adder[3:0] - 1;
     assign plot = counter_plot & plotfilter;
     assign color[2:0] = color_out[2:0];
 
@@ -86,54 +80,62 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
         .color(color_out[2:0])
     );
 
-    counter c0 (
+    doublecounter c0 (
         .clock(clock),
         .enable(enreg),
         .resetn(resetn),
-        .q(counter_out),
+        .x(x_adder),
+		.y(y_adder),
         .en(counter_plot)
     );
 //    defparam biggest = (size == 12) ? 143 : 35;
 endmodule
 
-module plotcounter(clock, enable, resetn, q, plot);
-	parameter biggest = 143;
+module doublecounter(clock, enable, resetn, x, y, en);
+	parameter biggest = 11;
+
+	input clock;
+	input enable;
+	input resetn;
+	output reg [7:0] x;
+	output reg [7:0] y;
 	
-	input clock, enable, resetn;
-	output reg [7:0] q;
-	output reg plot;
-	
-	reg state;
-	reg enabled;
+	output reg en;
 	
 	always@(posedge clock)
 	begin
-		if (resetn) begin
-			state <= 0;
-			q <= 7'd0;
-			plot <= 0;
+		if (resetn)
+		begin
+			x <= 7'b0;
+			y <= 7'b0;
+			en <= 0;
+		end
+
+		if (enable)
+		begin
+			en <= 1;
 		end
 		
-		if (enable && ~enabled)
-			enabled <= 1;
-		if (~enabled && ~enable)
-			q <= 7'd0;
-		if (enabled) begin
-			if (q == biggest)
-				enabled <= 0;
-			else if (state) begin
-				plot <= 0;
-				q <= q + 1;
-				state <= 0;
-			end else if (~state) begin
-				plot <= 1;
-				state <= 1;
-			end
-				
+		if (en) begin
+			if (y == biggest) begin
+				if (x == biggest) begin
+					x <= 0;
+					y <= 0;
+					en <= 0;
+				end
+				y <= 0;
+				x <= x + 1;
+			end else
+				y <= y + 1;
+		end
+		
+		if (~en) begin
+			x <= 0;
+			y <= 0;
 		end
 	end
-		
 endmodule
+
 
 module counter(clock, enable, resetn, q, en);
     parameter biggest = 143;
@@ -180,35 +182,6 @@ module picram_mux(
     wire [2:0] wdisk_color;
     wire [2:0] empty_color;
     wire [2:0] select_color;
-
-    // empty_pic_ram p0 (
-	// .address(address[7:0]),
-	// .clock(clk),
-	// .data(0),
-	// .wren(0),
-	// .q(empty_color[17:0])
-	// );
-
-    // black_pic_ram p2 (
-	// .address(address[7:0]),
-	// .clock(clk),
-	// .data(0),
-	// .wren(0),
-	// .q(bdisk_color[17:0]));
-
-    // white_pic_ram p3 (
-	// .address(address[7:0]),
-	// .clock(clk),
-	// .data(0),
-	// .wren(0),
-	// .q(wdisk_color[17:0]));
-
-    // select_pic_ram p1 (
-	// .address(address[7:0]),
-	// .clock(clk),
-	// .data(0),
-	// .wren(0),
-	// .q(select_color[17:0]));
 	
 	empty_pic_rom p0 (
 	.address(address[7:0]),
@@ -246,7 +219,6 @@ module picram_mux(
       2'd3: begin
         color[2:0] <= wdisk_color[2:0];
       end
-      //default: color[2:0] <= empty_color[2:0];
     endcase
 	end
 	

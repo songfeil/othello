@@ -36,6 +36,6 @@ force {place_disk} 0 0
 force {move_down} 1 25, 0 65
 force {move_down} 1 95, 0 150
 force {turn_side} 1 65, 0 200
-force {plot_box} 1 200, 0 300
+force {place_disk} 1 200, 0 300
 
 run 500ns
