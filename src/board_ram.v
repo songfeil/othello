@@ -371,11 +371,13 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 //			end
 			
 	always@(*) begin
-		if (resetn) // When d is the maximum value for the counter
+		
+	  if (resetn) // When d is the maximum value for the counter
 		begin
 			d = 'd64;
 			enable = 0;
 		end
+//	  else if()
 	  else if(clk)
 			begin
 				select = boardreg[d];
@@ -395,7 +397,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 				.en(1),
 				.clock(clock),
 				.reset_n(~resetn),
-				.d('d1999999)
+				.d('d19999999)
 				);
 
 endmodule

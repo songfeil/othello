@@ -6,7 +6,7 @@ vlib work
 # The timescale argument defines default time unit
 # (used when no unit is specified), while the second number
 # defines precision (all times are rounded to this value)
-vlog -timescale 1ns/1ns datapath.v board_ram.v
+vlog -timescale 1ns/1ns datapath.v enableonce.v
 
 
 # Load simulation using alu as the top level simulation module.
@@ -22,7 +22,7 @@ add wave {/*}
 #	input clk,
 
 force {resetn} 1 0, 0 15
-force {clk} 0 0, 1 10 -r 20
+force {clock} 0 0, 1 10 -r 20
 #force {resetn}
 
 force {turn_side} 0 0
@@ -33,8 +33,9 @@ force {move_right} 0 0
 force {plot_empty} 0 0
 force {plot_box} 0 0
 force {place_disk} 0 0
-force {move_down} 1 25, 0 45
-force {turn_side} 1 65, 0 125
+force {move_down} 1 25, 0 65
+force {move_down} 1 95, 0 150
+force {turn_side} 1 65, 0 200
 force {plot_box} 1 200, 0 300
 
 run 500ns
