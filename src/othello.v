@@ -5,7 +5,6 @@ module othello(
       PS2_DAT,
 		KEY,
 		LEDR,
-		HEX0,HEX2,HEX4,HEX5,
 		// The ports below are for the VGA output.  Do not change.
 		VGA_CLK,   						//	VGA Clock
 		VGA_HS,							//	VGA H_SYNC
@@ -31,20 +30,15 @@ module othello(
 		output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
 		output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
 		
-		output[9:0] LEDR;
-		output[6:0] HEX0;
-		output[6:0] HEX2;
-		output[6:0] HEX4;
-		output[6:0] HEX5;
+		output [9:0] LEDR;
 		
-		wire [2:0] colour;
+		wire [17:0] colour;
 		wire [7:0] x;
 		wire [6:0] y;
 		wire writeEn;
 		wire resetn;
 		
 		assign resetn = ~(KEY[0]);
-		assign LEDR[9] = writeEn;
 
 	
 		vga_adapter VGA(
@@ -65,57 +59,47 @@ module othello(
 			.VGA_CLK(VGA_CLK));
 		defparam VGA.RESOLUTION = "160x120";
 		defparam VGA.MONOCHROME = "FALSE";
-		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
+		defparam VGA.BITS_PER_COLOUR_CHANNEL = 6;
 		defparam VGA.BACKGROUND_IMAGE = "board_32.mif";
 			
 
-	  wire [3:0] state,ns;
-//	  select_ld;
+	  wire [3:0] select_ld;
  	  wire clk, restart, start;
 	  wire place, win;
-	  wire ld_pos,ld_select_out,ld_enable;
-	  wire up, down, left, right;
+	  wire ld_alu_out, ld_key, ld_x, ld_y;
 	  wire plot_empty, place_disk, draw_cell, turn_side;
-	  wire confirm;
-	  wire enable_select;
-	  wire [7:0] check_dir;
-//	  wire clock;
+	  wire clock;
 	  
 	  assign win = 0;
-	  assign confirm = &check_dir;
-//	  assign clock = CLOCK_50;
+	  assign clock = CLOCK_50;
 	  
 	  assign start = ~KEY[1];
 	  assign restart = ~KEY[0];
-	  assign LEDR[0] = clk;
-	  
+	  assign LEDR[9] = clk;
 	  control c1(
 				.clk(clk),
             .restart(restart),
-		      .go(~KEY[1]), 
-				.jump(~KEY[3]),
-				.confirm(confirm),
+		      .go(~KEY[1]),  
 				.win(win),
-				.state(state),
-				.ns(ns),
+				.state(LEDR[3:0]),
+				.ns(LEDR[7:4]),
 				
 //				.ld_key(ld_key), 
-				.ld_pos(ld_pos),
-				.ld_select_out(ld_select_out),
-				.ld_enable(ld_enable), 
-				.enable_select(enable_select),
-				
+//				.ld_x(ld_x), 
+//				.ld_y(ld_y),
+//				.select_ld(select_ld),
+//				.ld_alu_out(ld_alu_out),  
 				.draw_cell(draw_cell),
 				.plot_empty(plot_empty), 
 				.place_disk(place_disk),
 				.turn_side(turn_side),
-				.detect(detect),
 				
 				.move_up(up), 
-				.move_down(down), 
+				.move_down(~KEY[2]), 
 				.move_left(left), 
 				.move_right(right),
-				.place(place)
+				.place(~KEY[3])
+				
 				);
 				
 		keyboard_tracker k1 (
@@ -141,19 +125,15 @@ module othello(
 				.enable(clk),
 				.en(1),
 				.clock(CLOCK_50),
-				.reset_n(~restart),
-				.d('d833333)
+				.reset_n(~restart)
 				);
 				
-		wire [7:0] x_plot = place_disk ? x_plot1 : x_plot0;
-		wire [6:0] y_plot = place_disk ? y_plot1 : y_plot0;
-		wire [1:0] select = place_disk ? select1 : select0;
-//		wire [1:0] q_data[0:63];
-		wire enable, enable0, enable1;
+		wire [7:0] x_plot;
+		wire [6:0] y_plot;
+		wire [1:0] select;
+		wire enable;
 		
-		wire[2:0] x_pos, y_pos;
-		assign enable0 = plot_empty | draw_cell;
-		assign enable = place_disk ? enable1 : enable0;
+		assign enable = plot_empty | draw_cell | place_disk;
 				
 		datapath d1(
 				.turn_side(turn_side),
@@ -168,118 +148,23 @@ module othello(
 				.place_disk(place_disk),
 
 				.resetn(restart), 
-				.clock(CLOCK_50),
+				.clk(CLOCK_50),
 				
-				.x(x_pos),
-				.y(y_pos),
-				.x_plot(x_plot0),
-				.y_plot(y_plot0),
-				.select(select0)
+				.x_plot(x_plot),
+				.y_plot(y_plot),
+				.select(select)
 				);
-						
+				
 		plothelper p1(
 				.plot(writeEn), 
 				.x_out(x), 
 				.y_out(y), 
-				.color(colour),
-				
+				.color(colour), 
 				.x_in(x_plot), 
 				.y_in(y_plot), 
-				.select(select),
-				
+				.select(select), 
 				.clock(CLOCK_50), 
 				.enable(enable), 
 				.resetn(restart)
 				);
-		
-		board_ram b1(
-				.clock(CLOCK_50), 
-				.resetn(restart), 
-				.side(select), 
-				.detecten(detect), 
-				.writeen(place_disk), 
-				.x(x_pos), 
-				.y(y_pos), 
-				.q(q_data), 
-				.dir(check_dir),
-				
-				.x_plot(x_plot1),
-				.y_plot(y_plot1),
-				.select(select1),
-				.enable(enable1)
-				);
-		
-//		selecter re(
-//				.clock(CLOCK_50), 
-//				.en(enable_select), 
-//				.resetn(restart),
-//				
-//				.ld_pos(ld_pos),
-//				.ld_select_out(ld_select_out),
-//				.ld_enable(ld_enable),
-//				
-//				.q(q_data), 
-//				.select0(select0),
-//				.enable0(enable0),
-//				.x_plot(x_plot0),
-//				.y_plot(y_plot0),
-//				
-//				.enable(enable),
-//				.x_pos(x_plot), 
-//				.y_pos(y_plot),
-//				.select(select)
-//				);
-		
-		hex_decoder H0(
-			  .hex_digit(state), 
-			  .segments(HEX0)
-			  );
-        
-		hex_decoder H1(
-			  .hex_digit(ns), 
-			  .segments(HEX1)
-			  );
-		hex_decoder H2(
-			  .hex_digit(x_pos), 
-			  .segments(HEX2)
-			  );
-		hex_decoder H3(
-			  .hex_digit(y_pos), 
-			  .segments(HEX3)
-			  );
-//		hex_decoder H4(
-//			  .hex_digit(SW[7:4]), 
-//			  .segments(HEX4)
-//			  );
-//		hex_decoder H5(
-//			  .hex_digit(SW[8]), 
-//			  .segments(HEX5)
-//			  );
-				
-endmodule
-
-module hex_decoder(hex_digit, segments);
-    input [3:0] hex_digit;
-    output reg [6:0] segments;
-   
-    always @(*)
-        case (hex_digit)
-            4'h0: segments = 7'b100_0000;
-            4'h1: segments = 7'b111_1001;
-            4'h2: segments = 7'b010_0100;
-            4'h3: segments = 7'b011_0000;
-            4'h4: segments = 7'b001_1001;
-            4'h5: segments = 7'b001_0010;
-            4'h6: segments = 7'b000_0010;
-            4'h7: segments = 7'b111_1000;
-            4'h8: segments = 7'b000_0000;
-            4'h9: segments = 7'b001_1000;
-            4'hA: segments = 7'b000_1000;
-            4'hB: segments = 7'b000_0011;
-            4'hC: segments = 7'b100_0110;
-            4'hD: segments = 7'b010_0001;
-            4'hE: segments = 7'b000_0110;
-            4'hF: segments = 7'b000_1110;   
-            default: segments = 7'h7f;
-        endcase
 endmodule
