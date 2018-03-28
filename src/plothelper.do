@@ -6,7 +6,7 @@ vlib work
 # The timescale argument defines default time unit
 # (used when no unit is specified), while the second number
 # defines precision (all times are rounded to this value)
-vlog -timescale 1ns/1ns plothelper.v black_pic_rom.v white_pic_rom.v empty_pic_rom.v select_pic_rom.v
+vlog -timescale 1ns/1ns plothelper.v
 
 
 # Load simulation using alu as the top level simulation module.
@@ -32,6 +32,7 @@ force {y_in} 2#0 0ns
 force {select} 2#01 0ns
 force {enable} 0 0ns
 force {enable} 1 25ns, 0 9000ns
+force {select} 2#10 9500ns
 force {enable} 1 10000ns, 0 15300ns
 
 run 22500ns
