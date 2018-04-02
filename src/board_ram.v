@@ -157,7 +157,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 				downpos = pos + 8 * wricountout;
 				leftpos = pos - 1 * wricountout;
 				rightpos = pos + 1 * wricountout;
-				if (wricountout == 1)
+				if (wricountout == 0)
 					boardreg [pos] = twobitside;
 				else begin
 					if (boardreg [uppos] == twobitside || boardreg [uppos] < 2'b10)
