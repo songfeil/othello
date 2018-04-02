@@ -26,30 +26,36 @@ module control(
 	 assign en = move_up || move_down || move_left || move_right;
     localparam  START_GAME   = 4'd0,
 //                DRAW_BOARD   = 4'd1,
-					 B_WAIT_3     = 4'd1,
 					 
-					 B_WAIT       = 4'd2,
-                B_SELECT     = 4'd3,
-					 S_CYCLE_1    = 4'd4,
-                S_CYCLE_2    = 4'd5,
-					 B_DETECT     = 4'd6,
-                B_PLACE  	  = 4'd7,
-					 PLACE_CYCLE = 4'd8,
-					 TURN_SIDES   = 4'd9,
+					 B_SELECT     = 4'd1,
 					 
-					 END_GAME     = 4'd10,
-					 S_CYCLE_WAIT = 4'd11,
-					 B_DET_WAIT   = 4'd12,
-					 B_WAIT_0 	  = 4'd13,
-					 B_WAIT_1     = 4'd14,
-					 B_WAIT_2     = 4'd15;
+					 B_WAIT       = 4'd8,
+					 
+                S_CYCLE_WAIT = 4'd3,
+					 S_CYCLE_1    = 4'd2,
+					 
+					 B_WAIT_0 	  = 4'd6,
+					 
+					 S_CYCLE_2    = 4'd4,
+                B_WAIT_1     = 4'd5,
+					 
+					 B_DET_WAIT   = 4'd9,
+					 B_DETECT     = 4'd13,
+					 B_WAIT_2     = 4'd15,
+                B_PLACE  	  = 4'd14,
+					 B_WAIT_3     = 4'd12,
+					 
+					 PLACE_CYCLE  = 4'd10,
+					 TURN_SIDES   = 4'd11,
+					 
+					 END_GAME     = 4'd7;
                 
     // Next state logic aka our state table
     always@(*)
     begin: state_table 
             case (current_state)
-                START_GAME: next_state = go ? DRAW_BOARD : START_GAME; // Loop in current state until value is input
-                DRAW_BOARD: next_state = B_SELECT; // Loop in current state until go signal goes low
+                START_GAME: next_state = go ? B_SELECT : START_GAME; // Loop in current state until value is input
+//                DRAW_BOARD: next_state = B_SELECT; // Loop in current state until go signal goes low
                 
 					 B_WAIT: next_state = jump ? B_WAIT : TURN_SIDES;
 					 B_SELECT: begin
