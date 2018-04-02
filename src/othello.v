@@ -84,7 +84,7 @@ module othello(
 //	  wire clock;
 	  
 	  assign win = 0;
-	  assign confirm = |check_dir;
+	  assign confirm = |check_dir[7:0];
 //	  assign clock = CLOCK_50;
 	  
 	  assign keyright = ~KEY[1];
@@ -101,7 +101,7 @@ module othello(
             .restart(restart),
 		      .go(1), 
 				.jump(~KEY[3]),
-				.confirm(1),
+				.confirm(confirm),
 				.win(win),
 				.state(state),
 				.ns(ns),
@@ -155,18 +155,16 @@ module othello(
 		wire [7:0] x_plot0, x_plot1;
 		wire [6:0] y_plot0, y_plot1;
 		wire [1:0] select0, select1; 	
-		wire [7:0] x_plot = place_disk ? x_plot1[7:0] : x_plot0[7:0];
-		wire [6:0] y_plot = place_disk ? y_plot1[6:0] : y_plot0[6:0];
-		wire [1:0] select = place_disk ? select1[1:0] : select0[1:0];
+		wire [7:0] x_plot = enable_select ? x_plot1[7:0] : x_plot0[7:0];
+		wire [6:0] y_plot = enable_select ? y_plot1[6:0] : y_plot0[6:0];
+		wire [1:0] select = enable_select ? select1[1:0] : select0[1:0];
 //		wire [1:0] q_data[0:63];
 		wire enable, enable0, enable1;
 		
 		assign LEDR[7:0] = x_plot0;
-		assign LEDR[9:8] = select;
-		
 		wire[2:0] x_pos, y_pos;
 		assign enable0 = plot_empty || draw_cell || place_disk;
-		assign enable = place_disk ? enable1 : enable0;
+		assign enable = enable_select ? enable1 : enable0;
 		
 		wire[2:0] old_x, old_y;
 				
@@ -190,8 +188,9 @@ module othello(
 				.x_plot(x_plot0),
 				.y_plot(y_plot0),
 				.select(select0),
-				.old_x(old_x),
-				.old_y(old_y)
+				.outside(datapath_side)
+//				.old_x(old_x),
+//				.old_y(old_y)
 				);
 						
 		plothelper p1(
@@ -200,8 +199,8 @@ module othello(
 				.y_out(y), 
 				.color(colour),
 				
-				.x_in(x_plot0), 
-				.y_in(y_plot0), 
+				.x_in(x_plot), 
+				.y_in(y_plot), 
 				.select(select),
 				
 				.clock(CLOCK_50), 
@@ -212,7 +211,7 @@ module othello(
 		board_ram b1(
 				.clock(CLOCK_50), 
 				.resetn(restart), 
-				.side(select), 
+				.side(datapath_side), 
 				.detecten(detect), 
 				.writeen(place_disk), 
 				.x(x_pos), 
@@ -265,11 +264,11 @@ module othello(
 			  .segments(HEX3)
 			  );
 		hex_decoder H4(
-			  .hex_digit(old_x), 
+			  .hex_digit(check_dir[3:0]), 
 			  .segments(HEX4)
 			  );
 		hex_decoder H5(
-			  .hex_digit(old_y), 
+			  .hex_digit(check_dir[7:4]), 
 			  .segments(HEX5)
 			  );
 				

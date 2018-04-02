@@ -25,7 +25,8 @@ module control(
 //	 assign en = 0;
 	 assign en = move_up || move_down || move_left || move_right;
     localparam  START_GAME   = 4'd0,
-                DRAW_BOARD   = 4'd1,
+//                DRAW_BOARD   = 4'd1,
+					 B_WAIT_3     = 4'd1,
 					 
 					 B_WAIT       = 4'd2,
                 B_SELECT     = 4'd3,
@@ -38,7 +39,10 @@ module control(
 					 
 					 END_GAME     = 4'd10,
 					 S_CYCLE_WAIT = 4'd11,
-					 B_DET_WAIT   = 4'd12;
+					 B_DET_WAIT   = 4'd12,
+					 B_WAIT_0 	  = 4'd13,
+					 B_WAIT_1     = 4'd14,
+					 B_WAIT_2     = 4'd15;
                 
     // Next state logic aka our state table
     always@(*)
@@ -53,33 +57,29 @@ module control(
 								next_state = B_WAIT;
 						 else if (place)
 								next_state = B_DET_WAIT;
-						 else if (en)
+						 else 
 								next_state = en ? S_CYCLE_WAIT : B_SELECT;
+//						 else
+//								next_state = B_SELECT;
 						 end // 
 					 S_CYCLE_WAIT: next_state = en ? S_CYCLE_WAIT : S_CYCLE_1;
-                S_CYCLE_1: next_state = S_CYCLE_2; // Loop in current state until go signal goes low
-                S_CYCLE_2: next_state = B_SELECT; // Loop in current state until value is input
+                S_CYCLE_1: next_state = B_WAIT_0; // Loop in current state until go signal goes low
+					 B_WAIT_0: next_state = S_CYCLE_2;
+                S_CYCLE_2: next_state = B_WAIT_1; // Loop in current state until value is input
+					 
+					 B_WAIT_1: next_state = B_SELECT;
 					 B_DET_WAIT: next_state = place ? B_DET_WAIT : B_DETECT;
-					 B_DETECT:  next_state = confirm ? B_PLACE : B_SELECT;
-                B_PLACE: next_state = PLACE_CYCLE;
+					 B_DETECT:  next_state = B_WAIT_2;
+					 B_WAIT_2:  next_state = confirm ? B_PLACE : B_SELECT;
+                B_PLACE: next_state = B_WAIT_3;
+					 B_WAIT_3: next_state = PLACE_CYCLE;
 					 PLACE_CYCLE: next_state = win ? END_GAME : TURN_SIDES; // Loop in current state until go signal goes low
+					 
                 TURN_SIDES: next_state = B_SELECT;
 					 
 					 END_GAME: next_state = en ? START_GAME : END_GAME;
 					 
 //					 W_WAIT: next_state = jump ? W_WAIT : B_SELECT;
-//					 W_SELECT: begin
-//						 if (jump)
-//								next_state = B_SELECT;
-//						 else if (place)
-//								next_state = W_DETECT;
-//						 else
-//								next_state = en ? S_CYCLE_3 : W_SELECT;
-//						 end
-//					 S_CYCLE_3: next_state = S_CYCLE_4;
-//					 S_CYCLE_4: next_state = W_SELECT; // we will be done our two operations, start over after
-//					 W_DETECT: next_state = confirm ? W_PLACE : W_SELECT;
-//					 W_PLACE: next_state = win ? END_GAME : B_SELECT;
 					 
             default:     next_state = START_GAME;
         endcase
@@ -112,41 +112,24 @@ module control(
 //                select_ld = 4'd11; //load the board pic
 //					 plot = 1'b1;
                 end
-            B_SELECT: begin
-//                ld_x = 1'b1;
-//					 ld_y = 1'b1; // load present location
-//					 enable_select = 1'b1;
-					 draw_cell = 1'b1;
 					 
+            B_SELECT: begin
+					 draw_cell = 1'b1;	 
                 end
+					 
             S_CYCLE_1: begin
-//					 enable_select = 1'b1;
-//					 plot_empty = 1'b1; // enable signal for drawing a cell
-					 draw_cell = 1'b1;
-
-//					 select_ld = 4'd13 // load empty cell pic 
+					 draw_cell = 1'b1; 
 					 end
+					 
 				S_CYCLE_2: begin 
-//                ld_key = 1'b1; // load present keyboard
-//					 ld_alu_out = 1'b1;
-//					 ld_x = 1'b1; 
-//					 ld_y = 1'b1; // load new location based on keyboard operations
-//					 select_ld = 4'd2 // load selected cell pic
-//					 enable_select = 1'b1;
-//                draw_cell = 1'b0;
 					 plot_empty = 1'b1; // enable signal for drawing a cell
-
 					 end
+					 
 				B_DETECT: begin
 					 detect = 1'b1;
 					 end
 					 
 				B_PLACE: begin
-//					 select_ld = 4'd14; // load black in cell
-//					 enable_select = 1'b1;
-//					 ld_enable = 1'b1;
-//					 ld_pos = 1'b1;
-//					 ld_select_out = 1'b1;
 					 place_disk = 1'b1;
 					 end
 				
@@ -160,35 +143,6 @@ module control(
 				END_GAME: begin  
 					 end
 				
-//            W_SELECT: begin 
-//					 enable_select = 1'b1;
-//                draw_cell = 1'b1;
-//					 turn_side = 1'b1;
-//					 end
-//				S_CYCLE_3: begin
-//					 enable_select = 1'b1;
-//                plot_empty = 1'b1; 
-//					 end
-//				S_CYCLE_4: begin 
-////					 ld_key = 1'b1; // load present keyboard
-////					 ld_alu_out = 1'b1;
-////					 ld_x = 1'b1; 
-////					 ld_y = 1'b1; // load new location based on keyboard operations
-////					 select_ld = 4'd2 // load selected cell pic
-//					 enable_select = 1'b1;
-//                draw_cell = 1'b1;
-//					 end
-//				W_DETECT: begin
-//					 detect = 1'b1;
-//					 end
-//				W_PLACE: begin
-////					 select_ld = 4'd15; // load white in cell
-//					 enable_select = 1'b1;
-//					 ld_enable = 1'b1;
-//					 ld_pos = 1'b1;
-//					 ld_select_out = 1'b1;		
-//					 place_disk = 1'b1;
-//					 end
         // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
         endcase
     end // enable_signals

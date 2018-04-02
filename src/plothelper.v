@@ -163,7 +163,7 @@ module plothelper(plot, x_out, y_out, color, x_in, y_in, select, clock, enable, 
 	end
 
     assign x_out[7:0] = x_in[7:0] + x_adder[3:0];
-    assign y_out[6:0] = y_in[6:0] + y_adder[3:0] - 1;
+    assign y_out[6:0] = y_in[6:0] + y_adder[3:0];
     assign plot = counter_plot & plotfilter;
     assign color[2:0] = color_reg[2:0];
 

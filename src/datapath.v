@@ -6,7 +6,8 @@ module datapath(
    output [2:0]     y,
    output reg [7:0] x_plot,
    output reg [6:0] y_plot,
-   output reg [1:0] select
+   output reg [1:0] select,
+	output outside
     );
 	
     reg [7:0] curr_x_pos;
@@ -25,6 +26,7 @@ module datapath(
    
     assign move = move_up || move_down || move_left || move_right;
 	assign plot = plot_box || plot_empty || place_disk;
+	assign outside = side;
 
 	//Enable once module for move
 	wire movecontrol;
