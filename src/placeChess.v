@@ -29,26 +29,26 @@ module control(
 					 
 					 B_SELECT     = 4'd1,
 					 
-					 B_WAIT       = 4'd8,
+					 B_WAIT       = 4'd2,
 					 
                 S_CYCLE_WAIT = 4'd3,
-					 S_CYCLE_1    = 4'd2,
+					 S_CYCLE_1    = 4'd4,
 					 
-					 B_WAIT_0 	  = 4'd6,
+					 B_WAIT_0 	  = 4'd5,
 					 
-					 S_CYCLE_2    = 4'd4,
-                B_WAIT_1     = 4'd5,
+					 S_CYCLE_2    = 4'd6,
+                B_WAIT_1     = 4'd7,
 					 
-					 B_DET_WAIT   = 4'd9,
-					 B_DETECT     = 4'd13,
-					 B_WAIT_2     = 4'd15,
-                B_PLACE  	  = 4'd14,
+					 B_DET_WAIT   = 4'd8,
+					 B_DETECT     = 4'd9,
+					 B_WAIT_2     = 4'd10,
+                B_PLACE  	  = 4'd11,
 					 B_WAIT_3     = 4'd12,
 					 
-					 PLACE_CYCLE  = 4'd10,
-					 TURN_SIDES   = 4'd11,
+					 PLACE_CYCLE  = 4'd13,
+					 TURN_SIDES   = 4'd14,
 					 
-					 END_GAME     = 4'd7;
+					 END_GAME     = 4'd15;
                 
     // Next state logic aka our state table
     always@(*)

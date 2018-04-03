@@ -131,7 +131,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	end
 		dirreg[7:0] = detstart[7:0] & detend[7:0] & (~detnot[7:0]);
 //		dirreg[7:0] = detend[7:0] & detend[7:0] & (~detnot[7:0])
-		upamt[2:0] = 1 + (pos >> 3);
+		upamt[2:0] = (pos >> 3) + 1;
 		downamt[2:0] = 8 - (pos >> 3);
 		leftamt[2:0] = pos + 1 - ((pos >> 3) << 3);
 		rightamt[2:0] = 8 + ((pos >> 3) << 3) - pos;
@@ -297,7 +297,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 		
 	  if (resetn) // When d is the maximum value for the counter
 		begin
-			d = 'd0;
+			d = 0;
 			enable = 0;
 			x_plot[7:0] = 9;
 			y_plot[6:0] = 9;
@@ -316,18 +316,18 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 					x_plot[7:0] = 9;
 				end
 				enable = 1'b1;
-				d = d + 1'b1 ; // Increment d
+				d = d + 1'b1; // Increment d
 			end
 	  else if (~clk)
 			begin
 				enable = 1'b0;
-				if (d == 64) begin
+				if (d == 63) begin
 					d = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
 				end
 				if (~en_plot) begin
-					d = 'd0;
+					d = 0;
 					enable = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
