@@ -100,7 +100,7 @@ module othello(
             .restart(restart),
 		      .go(1), 
 				.jump(),
-				.confirm(confirm),
+				.confirm(1),
 				.win(win),
 				.state(state),
 				.ns(ns),
