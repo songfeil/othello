@@ -52,7 +52,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	reg [7:0] wrifin;
 	
 	wire [7:0] pos;
-	assign pos = x + (y << 3);
+	assign pos = x + (y * 8);
 	assign q = boardreg [pos];
 	wire [1:0] opside;
 	wire [1:0] twobitside;
@@ -114,7 +114,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	
 	always@(*) begin
 	if (resetn) begin
-		for(i = 0; i < 64; i=i+1)
+		for(i = 0; i <= 63; i=i+1)
 			begin
 				boardreg [i] = 2'b0;
 			end
@@ -133,12 +133,12 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 //		dirreg[7:0] = detend[7:0] & detend[7:0] & (~detnot[7:0])
 		upamt[2:0] = (pos >> 3) + 1;
 		downamt[2:0] = 8 - (pos >> 3);
-		leftamt[2:0] = pos + 1 - ((pos >> 3) << 3);
-		rightamt[2:0] = 8 + ((pos >> 3) << 3) - pos;
+		leftamt[2:0] = pos + 1 - ((pos >> 3) * 8);
+		rightamt[2:0] = 8 + ((pos >> 3) * 8) - pos;
 		
 			if (detectcounteren) begin: detect
-				uppos[7:0] = pos - (detcountout << 3);
-				downpos[7:0] = pos + (detcountout << 3);
+				uppos[7:0] = pos - (detcountout * 8);
+				downpos[7:0] = pos + (detcountout * 8);
 				leftpos[7:0] = pos - detcountout;
 				rightpos[7:0] = pos + detcountout;
 				if (detcountout == 0) begin
@@ -321,7 +321,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	  else if (~clk)
 			begin
 				enable = 1'b0;
-				if (d == 63) begin
+				if (d == 64) begin
 					d = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
