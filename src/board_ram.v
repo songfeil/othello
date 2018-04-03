@@ -1,10 +1,10 @@
-module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable,check_board);
+module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable,en_plot,check_board);
 	input clock, resetn;
 	input detecten, writeen;
 	input [2:0] x;
 	input [2:0] y;
 	input side;
-//	input en_plot;
+	input en_plot;
 	output [1:0] q;
 	output [7:0] dir;
 	
@@ -30,7 +30,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 		.clock(clock),
 		.resetn(resetn)
 	);
-	wire en_plot = writecontrol;
+//	wire en_plot = writecontrol;
 	
 	reg [7:0] i;
 //	reg [7:0] i0;
@@ -340,7 +340,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 				.en(en_plot),
 				.clock(clock),
 				.reset_n(~resetn),
-				.d('d199999)
+				.d('d9999)
 				);
 
 endmodule

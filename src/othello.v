@@ -215,7 +215,7 @@ module othello(
 				.side(datapath_side), 
 				.detecten(detect), 
 				.writeen(place_disk),
-//				.en_plot(place_disk),
+				.en_plot(place_disk),
 				.x(x_pos), 
 				.y(y_pos), 
 				.q(q_data), 
