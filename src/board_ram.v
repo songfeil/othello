@@ -52,7 +52,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	reg [7:0] wrifin;
 	
 	wire [7:0] pos;
-	assign pos = (y << 3) + x;
+	assign pos = x + (y << 3);
 	assign q = boardreg [pos];
 	wire [1:0] opside;
 	wire [1:0] twobitside;
@@ -64,8 +64,8 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	wire [2:0] minxy;
 	assign minxy = (x < y) ? x : y;
 	
-	wire [1:0] test;
-	assign test = boardreg [pos + 1];
+//	wire [1:0] test;
+//	assign test = boardreg [pos + 1];
 	
 	wire detectcounteren;
 	wire writecounteren;
@@ -116,13 +116,13 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	if (resetn) begin
 		for(i = 0; i < 64; i=i+1)
 			begin
-				boardreg [i] <= 2'b0;
+				boardreg [i] = 2'b0;
 			end
 			
-			boardreg [27] <= 2'd2;
-			boardreg [28] <= 2'd3;
-			boardreg [35] <= 2'd3;
-			boardreg [36] <= 2'd2;
+			boardreg [27] = 2'd2;
+			boardreg [28] = 2'd3;
+			boardreg [35] = 2'd3;
+			boardreg [36] = 2'd2;
 			detstart = 8'd0;
 			detend = 8'd0;
 			detnot = 8'd0;
@@ -131,7 +131,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	end
 		dirreg[7:0] = detstart[7:0] & detend[7:0] & (~detnot[7:0]);
 //		dirreg[7:0] = detend[7:0] & detend[7:0] & (~detnot[7:0])
-		upamt[2:0] = (pos >> 3) + 1;
+		upamt[2:0] = 1 + (pos >> 3);
 		downamt[2:0] = 8 - (pos >> 3);
 		leftamt[2:0] = pos + 1 - ((pos >> 3) << 3);
 		rightamt[2:0] = 8 + ((pos >> 3) << 3) - pos;
@@ -196,13 +196,13 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 				if (wricountout == 0)
 					boardreg [pos] = twobitside;
 				else begin
-					if (boardreg [uppos] == twobitside[1:0] || boardreg [uppos] < 2'b10)
+					if (boardreg [uppos] == twobitside[1:0])
 						wrifin[0] = 1;
-					if (boardreg [downpos] == twobitside[1:0] || boardreg [downpos] < 2'b10)
+					if (boardreg [downpos] == twobitside[1:0])
 						wrifin[4] = 1;
-					if (boardreg [leftpos] == twobitside[1:0] || boardreg [leftpos] < 2'b10)
+					if (boardreg [leftpos] == twobitside[1:0])
 						wrifin[6] = 1;
-					if (boardreg [rightpos] == twobitside[1:0] || boardreg [rightpos] < 2'b10)
+					if (boardreg [rightpos] == twobitside[1:0])
 						wrifin[2] = 1;
 					if (wrifin[0] == 0)
 						boardreg [uppos] = twobitside[1:0];
@@ -297,7 +297,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 		
 	  if (resetn) // When d is the maximum value for the counter
 		begin
-			d = 'd64;
+			d = 'd0;
 			enable = 0;
 			x_plot[7:0] = 9;
 			y_plot[6:0] = 9;
@@ -316,18 +316,18 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 					x_plot[7:0] = 9;
 				end
 				enable = 1'b1;
-				d = d - 1'b1 ; // Increment d
+				d = d + 1'b1 ; // Increment d
 			end
 	  else if (~clk)
 			begin
 				enable = 1'b0;
-				if (d == 0) begin
-					d = 64;
+				if (d == 64) begin
+					d = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
 				end
 				if (~en_plot) begin
-					d = 'd64;
+					d = 'd0;
 					enable = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
