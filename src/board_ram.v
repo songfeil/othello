@@ -52,7 +52,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	reg [7:0] wrifin;
 	
 	wire [7:0] pos;
-	assign pos = y << 3 + x;
+	assign pos = (y << 3) + x;
 	assign q = boardreg [pos];
 	wire [1:0] opside;
 	wire [1:0] twobitside;
@@ -131,14 +131,14 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	end
 		dirreg[7:0] = detstart[7:0] & detend[7:0] & (~detnot[7:0]);
 //		dirreg[7:0] = detend[7:0] & detend[7:0] & (~detnot[7:0])
-		upamt = pos >> 3 + 1;
-		downamt = 8 - pos >> 3;
-		leftamt = pos + 1 - ((pos >> 3) << 3);
-		rightamt = 8 + (pos >> 3) << 3 - pos;
+		upamt[2:0] = (pos >> 3) + 1;
+		downamt[2:0] = 8 - (pos >> 3);
+		leftamt[2:0] = pos + 1 - ((pos >> 3) << 3);
+		rightamt[2:0] = 8 + ((pos >> 3) << 3) - pos;
 		
 			if (detectcounteren) begin: detect
-				uppos[7:0] = pos - detcountout << 3;
-				downpos[7:0] = pos + detcountout << 3;
+				uppos[7:0] = pos - (detcountout << 3);
+				downpos[7:0] = pos + (detcountout << 3);
 				leftpos[7:0] = pos - detcountout;
 				rightpos[7:0] = pos + detcountout;
 				if (detcountout == 0) begin
@@ -189,8 +189,8 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 			if (writecounteren) begin
 				wrifin[7:0] = ~dirreg;
 				writeenabled = 1;
-				uppos[7:0] = pos - wricountout << 3;
-				downpos[7:0] = pos + wricountout << 3;
+				uppos[7:0] = pos - (wricountout << 3);
+				downpos[7:0] = pos + (wricountout << 3);
 				leftpos[7:0] = pos - wricountout;
 				rightpos[7:0] = pos + wricountout;
 				if (wricountout == 0)
