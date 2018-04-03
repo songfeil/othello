@@ -149,7 +149,7 @@ module othello(
 				.en(1),
 				.clock(CLOCK_50),
 				.reset_n(~restart),
-				.d('d1833333)
+				.d('d2833333)
 				);
 				
 		wire [7:0] x_plot0, x_plot1;
@@ -215,7 +215,7 @@ module othello(
 				.side(datapath_side), 
 				.detecten(detect), 
 				.writeen(place_disk),
-				.en_plot(place_disk),
+//				.en_plot(place_disk),
 				.x(x_pos), 
 				.y(y_pos), 
 				.q(q_data), 
