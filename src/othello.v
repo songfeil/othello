@@ -167,6 +167,7 @@ module othello(
 		assign enable = enable_select ? enable1 : enable0;
 		
 		wire[2:0] old_x, old_y;
+		wire[15:0] check_board;
 				
 		datapath d1(
 				.turn_side(turn_side),
@@ -223,7 +224,8 @@ module othello(
 				.x_plot(x_plot1),
 				.y_plot(y_plot1),
 				.select(select1),
-				.enable(enable1)
+				.enable(enable1),
+				.check_board(check_board)
 				);
 		
 //		selecter re(
@@ -248,20 +250,20 @@ module othello(
 //				);
 		
 		hex_decoder H0(
-			  .hex_digit(state), 
+			  .hex_digit(check_board[15:12]), 
 			  .segments(HEX0)
 			  );
         
 		hex_decoder H1(
-			  .hex_digit(ns), 
+			  .hex_digit(check_board[11:8]), 
 			  .segments(HEX1)
 			  );
 		hex_decoder H2(
-			  .hex_digit(x_pos), 
+			  .hex_digit(check_board[7:4]), 
 			  .segments(HEX2)
 			  );
 		hex_decoder H3(
-			  .hex_digit(y_pos), 
+			  .hex_digit(check_board[3:0]), 
 			  .segments(HEX3)
 			  );
 		hex_decoder H4(

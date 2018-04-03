@@ -1,4 +1,4 @@
-module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable,en_plot);
+module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable,en_plot,check_board);
 	input clock, resetn;
 	input detecten, writeen;
 	input [2:0] x;
@@ -11,6 +11,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	output [7:0] x_plot;
 	output [6:0] y_plot;
 	output [1:0] select;
+	output [15:0] check_board;
 	output enable;
 	
 	wire detectcontrol;
@@ -20,6 +21,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 		.clock(clock),
 		.resetn(resetn)
 	);
+	
 	
 	wire writecontrol;
 	enableonce e2(
@@ -76,6 +78,39 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 	reg [2:0] downamt;
 	reg [2:0] leftamt;
 	reg [2:0] rightamt;
+	
+	wire [1:0] cb0 = boardreg[24];
+	assign check_board[0] = cb0 [1];
+	wire [1:0] cb1 = boardreg[25];
+	assign check_board[1] = cb1 [1];
+	wire [1:0] cb2 = boardreg[26];
+	assign check_board[2] = cb2 [1];
+	wire [1:0] cb3 = boardreg[27];
+	assign check_board[3] = cb3 [1];
+	wire [1:0] cb4 = boardreg[28];
+	assign check_board[4] = cb4 [1];
+	wire [1:0] cb5 = boardreg[29];
+	assign check_board[5] = cb5 [1];
+	wire [1:0] cb6 = boardreg[30];
+	assign check_board[6] = cb6 [1];
+	wire [1:0] cb7 = boardreg[31];
+	assign check_board[7] = cb7 [1];
+	wire [1:0] cb8 = boardreg[32];
+	assign check_board[8] = cb8 [1];
+	wire [1:0] cb9 = boardreg[33];
+	assign check_board[9] = cb9 [1];
+	wire [1:0] cb10 = boardreg[34];
+	assign check_board[10] = cb10 [1];
+	wire [1:0] cb11 = boardreg[35];
+	assign check_board[11] = cb11 [1];
+	wire [1:0] cb12 = boardreg[36];
+	assign check_board[12] = cb12 [1];
+	wire [1:0] cb13 = boardreg[37];
+	assign check_board[13] = cb13 [1];
+	wire [1:0] cb14 = boardreg[38];
+	assign check_board[14] = cb14 [1];
+	wire [1:0] cb15 = boardreg[39];
+	assign check_board[15] = cb15 [1];
 	
 	always@(*) begin
 	if (resetn) begin
@@ -134,7 +169,6 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 						detend[2] = 1;
 				end
 				
-				wrifin = ~dirreg;
 			end
 			
 			else if (dirreg == 0 && ~detectcounteren) begin
@@ -153,6 +187,7 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 			end
 			
 			if (writecounteren) begin
+				wrifin = ~dirreg;
 				writeenabled = 1;
 				uppos = pos - 8 * wricountout;
 				downpos = pos + 8 * wricountout;
@@ -264,6 +299,8 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 		begin
 			d = 'd64;
 			enable = 0;
+			x_plot[7:0] = 9;
+			y_plot[6:0] = 9;
 		end
 //	  else if()
 	
@@ -286,6 +323,12 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 				enable = 1'b0;
 				if (d == 0) begin
 					d = 64;
+					x_plot[7:0] = 9;
+					y_plot[6:0] = 9;
+				end
+				if (~en_plot) begin
+					d = 'd64;
+					enable = 0;
 					x_plot[7:0] = 9;
 					y_plot[6:0] = 9;
 				end
