@@ -100,7 +100,7 @@ module othello(
 				.clk(clk),
             .restart(restart),
 		      .go(1), 
-				.jump(~KEY[3]),
+				.jump(),
 				.confirm(confirm),
 				.win(win),
 				.state(state),
@@ -122,7 +122,7 @@ module othello(
 				.move_down(ordown), 
 				.move_left(left), 
 				.move_right(orright),
-				.place(place)
+				.place(~KEY[3])
 				);
 				
 		keyboard_tracker k1 (
@@ -250,28 +250,28 @@ module othello(
 //				);
 		
 		hex_decoder H0(
-			  .hex_digit(check_board[15:12]), 
+			  .hex_digit(state), 
 			  .segments(HEX0)
 			  );
         
 		hex_decoder H1(
-			  .hex_digit(check_board[11:8]), 
+			  .hex_digit(ns), 
 			  .segments(HEX1)
 			  );
 		hex_decoder H2(
-			  .hex_digit(check_board[7:4]), 
+			  .hex_digit(check_board[3:0]), 
 			  .segments(HEX2)
 			  );
 		hex_decoder H3(
-			  .hex_digit(check_board[3:0]), 
+			  .hex_digit(check_board[7:4]), 
 			  .segments(HEX3)
 			  );
 		hex_decoder H4(
-			  .hex_digit(check_dir[3:0]), 
+			  .hex_digit(check_board[11:8]), 
 			  .segments(HEX4)
 			  );
 		hex_decoder H5(
-			  .hex_digit(check_dir[7:4]), 
+			  .hex_digit(check_board[15:12]), 
 			  .segments(HEX5)
 			  );
 				
