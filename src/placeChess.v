@@ -114,10 +114,10 @@ module control(
 //                select_ld = 4'd10; // beginning scene
 //					 plot = 1'b1;
                 end
-            DRAW_BOARD: begin
+//            DRAW_BOARD: begin
 //                select_ld = 4'd11; //load the board pic
 //					 plot = 1'b1;
-                end
+//                end
 					 
             B_SELECT: begin
 					 draw_cell = 1'b1;	 
@@ -173,6 +173,12 @@ module ratedivider(enable,en,clock,reset_n,d);
 	output enable;
 	wire par_load;
 	
+	reg [27:0] half;
+	
+	always@(*) begin
+		half = d >> 1;
+	end
+	
 //	assign d = 'd833333;
 	
 	reg [27:0] q; // Declare q
@@ -192,6 +198,6 @@ module ratedivider(enable,en,clock,reset_n,d);
 				end
 		end
 	
-	assign enable = (q == 0) ? 1 : 0;
+	assign enable = (q < half) ? 1 : 0;
 endmodule
 

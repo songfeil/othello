@@ -1,9 +1,10 @@
-module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable);
+module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_plot,select,enable,en_plot);
 	input clock, resetn;
 	input detecten, writeen;
 	input [2:0] x;
 	input [2:0] y;
 	input side;
+	input en_plot;
 	output [1:0] q;
 	output [7:0] dir;
 	
@@ -265,26 +266,38 @@ module board_ram(clock, resetn, side, detecten, writeen, x, y, q, dir,x_plot,y_p
 			enable = 0;
 		end
 //	  else if()
+	
 	  else if(clk)
 			begin
 				select = boardreg[d];
-				x_plot[7:0] = 7'd13 * d + 7'd9;
-				y_plot[6:0] = 6'd13 * d + 6'd9;
+				y_plot[6:0] = y_plot[6:0] + 13;
+				if (y_plot[6:0] > 100) begin
+					y_plot[6:0] = 0;
+					x_plot[7:0] = x_plot[7:0] + 13;
+				end
+				if (x_plot[7:0] > 100) begin
+					x_plot[7:0] = 0;
+				end
 				enable = 1'b1;
 				d = d - 1'b1 ; // Increment d
 			end
 	  else if (~clk)
 			begin
 				enable = 1'b0;
+				if (d == 0) begin
+					d = 64;
+					x_plot[7:0] = 9;
+					y_plot[6:0] = 9;
+				end
 			end
 	end
 	
 	ratedivider r2(
 				.enable(clk),
-				.en(1),
+				.en(en_plot),
 				.clock(clock),
 				.reset_n(~resetn),
-				.d('d19999999)
+				.d('d19999)
 				);
 
 endmodule
